@@ -11,11 +11,19 @@ class Exercise extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'name',
+        'user_id',
+        'sets',
+        'reps',
+        'weight'
+    ];
+
     public function user(): HasOne {
         return $this->hasOne(User::class);
     }
 
-    public function day(): BelongsToMany {
-        $this->belongsToMany(Day::class, 'day_exercise');
+    public function days(): BelongsToMany {
+        return $this->belongsToMany(Day::class, 'day_exercise');
     }
 }

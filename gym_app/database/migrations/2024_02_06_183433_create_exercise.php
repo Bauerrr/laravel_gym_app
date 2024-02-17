@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('exercises', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('name');
-            $table->integer('reps');
-            $table->integer('sets');
-            $table->float('weight');
+            $table->integer('reps')->default(0);
+            $table->integer('sets')->default(0);
+            $table->float('weight')->default(0);
             $table->timestamps();
         });
     }
@@ -26,6 +28,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('exercises', function (Blueprint $table){
+            $table->dropForeign('exercises_user_id_foreign');
+        });
         Schema::dropIfExists('exercise');
     }
 };

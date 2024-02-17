@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('days', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->string('name');
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
@@ -25,6 +25,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('days', function (Blueprint $table){
+            $table->dropForeign('days_user_id_foreign');
+        });
         Schema::dropIfExists('day');
     }
 };

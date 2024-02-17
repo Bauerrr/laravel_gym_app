@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('scores', function (Blueprint $table) {
             $table->id();
-            $table->float('score');
-            $table->timestamps();
+            $table->unsignedBigInteger('day_id');
+            $table->foreign('day_id')->references('id')->on('days')->onDelete('cascade');
+            $table->float('score')->default(0);
+            $table->date('created_at');
         });
     }
 
@@ -23,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('scores', function (Blueprint $table){
+            $table->dropForeign('scores_day_id_foreign');
+        });
+
         Schema::dropIfExists('score');
     }
 };
