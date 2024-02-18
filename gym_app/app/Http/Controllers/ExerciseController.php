@@ -6,11 +6,11 @@ use App\Http\Requests\ExerciseStoreRequest;
 use App\Models\Exercise;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ExerciseController extends Controller
 {
     public function store(ExerciseStoreRequest $request){
-        // Dodanie do cache z index nowego ćwiczenia
         $data = $request->validated();
 
         $user = Auth::user();
@@ -18,13 +18,16 @@ class ExerciseController extends Controller
         $sets = $data['sets'] ?? 0;
         $weight = $data['weight'] ?? 0;
 
-        Exercise::create([
+        $exercises = Exercise::create([
             'user_id' => $user->id,
             'name' => $data['name'],
             'reps' => $reps,
             'sets' => $sets,
             'weight' => $weight
-        ]);
+        ])->get();
+
+        Cache::put('user:'.$user->id.':exercises', $exercises, now()->addMinutes(1));
+
 
         return response([
             'message' => $data['name'] . " created successfully"
@@ -47,25 +50,36 @@ class ExerciseController extends Controller
     }
 
     public function index(){
-        // Dodanie cache na exercises
         $user = Auth::user();
-        $exercises = Exercise::where([
-            'user_id' => $user->id
-        ])->get();
+        if(Cache::has('user:'.$user->id.':exercises')){
+            $exercises = Cache::get('user:'.$user->id.':exercises');
+        }else{
+            $exercises = Exercise::where([
+                'user_id' => $user->id
+            ])->get();
+
+            Cache::put('user:'.$user->id.':exercises', $exercises, now()->addMinutes(1));
+        }
 
         return response([$exercises], 200);
 
     }
 
     public function destroy($id){
-        // Przerobienie cache z index żeby nie zawierał usuniętych ćwiczeń
         $user = Auth::user();
-        $affectedRows = Exercise::where([
+        $exercise = Exercise::where([
             'user_id' => $user->id,
             'id' => $id
-        ])->delete();
+        ])->first();
+        $affectedRows = $exercise->delete();
 
         if($affectedRows){
+            if(Cache::has('user:'.$user->id.':exercises')){
+                $exercises = Cache::get('user:'.$user->id.':exercises');
+                $exercises = $exercises->except($exercise->id);
+                Cache::put('user:'.$user->id.':exercises', $exercises, now()->addMinutes(1));
+            }
+
             return response(['message' => 'Exercise '.$id.' deleted successfully'], 200);
         }
 
@@ -74,7 +88,6 @@ class ExerciseController extends Controller
     }
 
     public function update($id, Request $request){
-        // Przerobienie cache z index żeby nie zawierał starych informacji
         $user = Auth::user();
         $exercise = Exercise::where([
             'user_id' => $user->id,
@@ -82,11 +95,24 @@ class ExerciseController extends Controller
         ])->first();
 
         if($exercise){
+
             $exercise->sets = $request->sets ?? $exercise->sets;
             $exercise->name = $request->name ?? $exercise->name;
             $exercise->reps = $request->reps ?? $exercise->reps;
             $exercise->weight = $request->weight ?? $exercise->weight;
             $exercise->save();
+
+            if(Cache::has('user:'.$user->id.':exercises')){
+                Cache::forget('user:'.$user->id.':exercises');
+            }
+
+            if($exercise->days()){
+                foreach($exercise->days as $day){
+                    if(Cache::has('user:'.$user->id.':day:'.$day->name.':exercises')){
+                        Cache::forget('user:'.$user->id.':day:'.$day->name.':exercises');
+                    }
+                }
+            }
 
             return response(['message' => 'Exercise '.$id.' updated successfully'], 200);
         }

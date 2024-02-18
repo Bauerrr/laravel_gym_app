@@ -7,23 +7,32 @@ use App\Models\Day;
 use App\Models\Exercise;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class DayController extends Controller
 {
 
     public function show($name){
-        // Dodanie cache na exercises dla danego dnia
         $user = Auth::user();
-        $day = Day::where([
-            'user_id' => $user->id,
-            'name' => $name
-        ])->first();
 
-        return response($day->exercises, 200);
+        if(Cache::has('user:'.$user->id.':day:'.$name.':exercises')){
+            $exercises = Cache::get('user:'.$user->id.':day:'.$name.':exercises');
+        }else{
+            $day = Day::where([
+                'user_id' => $user->id,
+                'name' => $name
+            ])->first();
+
+            $exercises = $day->exercises;
+
+            Cache::put('user:'.$user->id.':day:'.$name.':exercises', $exercises, now()->addMinutes(1));
+
+        }
+
+        return response($exercises, 200);
     }
 
     public function addExercise($name, DayRequest $request){
-        // Przerobienie cache z poprzedniej funkcji żeby zawierało nowe dane
         $user = Auth::user();
         $data = $request->validated();
 
@@ -40,6 +49,8 @@ class DayController extends Controller
         if($exercise){
             $day->exercises()->attach($exercise->id);
 
+            Cache::put('user:'.$user->id.':day:'.$name.':exercises', $day->exercises, now()->addMinutes(1));
+
             return response(['message' => 'Exercise '.$exercise->name.' added to '.$day->name], 200);
         }
 
@@ -47,7 +58,6 @@ class DayController extends Controller
     }
 
     public function deleteExercise($name, DayRequest $request){
-        // Przerobienie cache z poprzedniej funkcji żeby zawierało nowe dane
         $user = Auth::user();
         $data = $request->validated();
         $day = Day::where([
@@ -62,6 +72,8 @@ class DayController extends Controller
 
         if($exercise){
             $day->exercises()->detach($exercise->id);
+
+            Cache::put('user:'.$user->id.':day:'.$name.':exercises', $day->exercises, now()->addMinutes(1));
 
             return response(['message' => 'Exercise '.$exercise->name.' detached from '.$day->name], 200);
         }

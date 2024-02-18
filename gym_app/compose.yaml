@@ -53,7 +53,7 @@ services:
       volumes:
         - ./:/var/www
 
-    # Node server
+  # Node server
     node:
       build:
         context: .

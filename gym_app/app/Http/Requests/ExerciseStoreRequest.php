@@ -24,7 +24,10 @@ class ExerciseStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required'
+            'name' => 'required',
+            'reps' => 'nullable',
+            'sets' => 'nullable',
+            'weight' => 'nullable'
         ];
     }
 

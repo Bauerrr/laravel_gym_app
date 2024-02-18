@@ -78,6 +78,9 @@ return [
             'driver' => 'redis',
             'connection' => 'cache',
             'lock_connection' => 'default',
+//            'options' => [
+//                'parameters' => ['password' => env('REDIS_PASSWORD', null)],
+//            ]
         ],
 
         'dynamodb' => [
