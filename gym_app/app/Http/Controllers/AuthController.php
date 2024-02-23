@@ -37,7 +37,7 @@ class AuthController extends Controller
         return response([
             'user' => $user,
             'token' => $token
-        ]);
+        ], 201);
     }
 
     public function login(LoginRequest $request){
@@ -51,13 +51,16 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        if(auth('sanctum')->check()){
+            auth()->user()->tokens()->delete();
+        }
 
         $token = $user->createToken('main')->plainTextToken;
 
         return response([
             'user' => $user,
             'token' => $token
-        ]);
+        ], 200);
     }
 
     public function logout(Request $request){
@@ -69,6 +72,7 @@ class AuthController extends Controller
 
         return response([
             'success' => true
-        ]);
+        ], 200);
     }
+
 }

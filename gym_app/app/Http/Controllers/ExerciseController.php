@@ -42,7 +42,7 @@ class ExerciseController extends Controller
         ])->first();
 
         if($exercise){
-            return response([$exercise], 200);
+            return response($exercise, 200);
         }
 
         return response(['error' => 'Exercise not found'], 404);
@@ -61,7 +61,7 @@ class ExerciseController extends Controller
             Cache::put('user:'.$user->id.':exercises', $exercises, now()->addMinutes(1));
         }
 
-        return response([$exercises], 200);
+        return response($exercises, 200);
 
     }
 
@@ -71,9 +71,9 @@ class ExerciseController extends Controller
             'user_id' => $user->id,
             'id' => $id
         ])->first();
-        $affectedRows = $exercise->delete();
 
-        if($affectedRows){
+        if($exercise){
+            $exercise->delete();
             if(Cache::has('user:'.$user->id.':exercises')){
                 $exercises = Cache::get('user:'.$user->id.':exercises');
                 $exercises = $exercises->except($exercise->id);

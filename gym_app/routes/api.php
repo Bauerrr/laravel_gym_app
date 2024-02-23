@@ -18,22 +18,10 @@ use \App\Http\Controllers\ScoreController;
 |
 */
 
-//Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//    return $request->user();
-//});
 
 Route::post('/signup', [AuthController::class, 'signup']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-
-
-//Route::middleware('auth:sanctum')->group(function () {
-//    Route::post('/exercise/create', [ExerciseController::class, 'create']);
-//    Route::get('/exercise/{id}', [ExerciseController::class, 'getOne']);
-//    Route::get('/exercise/all', [ExerciseController::class, 'getAll']);
-//    Route::delete('/exercise/{id}', [ExerciseController::class, 'delete']);
-//}
-//);
 
 Route::apiResource('exercises', ExerciseController::class)->middleware('auth:sanctum');
 
