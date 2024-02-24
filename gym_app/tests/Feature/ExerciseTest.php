@@ -2,13 +2,34 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class ExerciseTest extends TestCase
 {
-    private string $token = '19|xotUCOClXBuvayHkkQ0jm4Sp076nPbNNRhtMauQSf5369148';
+    private $token;
+    private $user;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->user = User::firstOrCreate(
+            ['name' => 'FETestUser1'],
+            ['email' => 'FETestUser1@test.com'],
+            ['password' => bcrypt('FETestUser1!')]);
+
+        $this->token = $this->user->createToken('main')->plainTextToken;
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        $this->user->tokens()->delete();
+        $this->token = null;
+        $this->user = null;
+    }
 
     public function test_exercise_store_valid_information(): void
     {

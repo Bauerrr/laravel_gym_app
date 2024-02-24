@@ -51,6 +51,7 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        // To jest chyba bez sensu - przetestuj
         if(auth('sanctum')->check()){
             auth()->user()->tokens()->delete();
         }

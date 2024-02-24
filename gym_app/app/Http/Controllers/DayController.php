@@ -47,14 +47,17 @@ class DayController extends Controller
         ])->first();
 
         if($exercise){
-            $day->exercises()->attach($exercise->id);
+            if(!$day->exercises->contains($exercise->id)){
+                $day->exercises()->attach($exercise->id);
 
-            Cache::put('user:'.$user->id.':day:'.$name.':exercises', $day->exercises, now()->addMinutes(1));
+                Cache::put('user:'.$user->id.':day:'.$name.':exercises', $day->exercises, now()->addMinutes(1));
 
-            return response(['message' => 'Exercise '.$exercise->name.' added to '.$day->name], 200);
+                return response(['message' => 'Exercise '.$exercise->name.' added to '.$day->name], 200);
+            }
+            return response(['message' => 'Exercise '.$exercise->name.' already in '.$day->name], 200);
         }
 
-        return response(['error' => 'Exercise '.$exercise->id.' not found'], 404);
+        return response(['error' => 'Exercise '.$data['exercise_id'].' not found'], 404);
     }
 
     public function deleteExercise($name, DayRequest $request){
@@ -70,6 +73,7 @@ class DayController extends Controller
             'id' => $data['exercise_id']
         ])->first();
 
+
         if($exercise){
             $day->exercises()->detach($exercise->id);
 
@@ -78,7 +82,7 @@ class DayController extends Controller
             return response(['message' => 'Exercise '.$exercise->name.' detached from '.$day->name], 200);
         }
 
-        return response(['error' => 'Exercise '.$exercise->id.' not found'], 404);
+        return response(['error' => 'Exercise '.$data['exercise_id'].' not found'], 404);
     }
 
 

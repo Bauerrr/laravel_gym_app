@@ -29,6 +29,10 @@ class ScoreController extends Controller
                 'created_at' => $data['date']
             ])->first();
 
+            if(!$score){
+                $score = 0;
+            }
+
             Cache::put('user:'.$user->id.':date:'.$data['date'], $score, now()->addMinutes(1));
         }
 
@@ -61,10 +65,9 @@ class ScoreController extends Controller
             $dayScore += floatval($exercise->weight)/10 * floatval($exercise->reps) * floatval($exercise->sets);
         }
 
-        $score = Score::firstOrCreate([
-            'day_id' => $day->id,
-            'created_at' => $data['date']
-        ]);
+        $score = Score::firstOrCreate(
+            ['day_id' => $day->id,
+            'created_at' => $data['date']]);
 
         $score->score = $dayScore;
         $score->save();
