@@ -52,6 +52,7 @@ services:
       working_dir: /var/www
       volumes:
         - ./:/var/www
+        - /var/www/gym_app_angular
 
   # Node server
     node:
@@ -59,9 +60,11 @@ services:
         context: .
         target: node
       volumes:
-        - .:/usr/src
-        - ./node_modules:/usr/src/node_modules
+        - ./gym_app_angular:/var/www/gym_app_angular
+        - /var/www/gym_app_angular/node_modules
       tty: true
+      ports:
+        - 3000:3000
 
 volumes:
     db-data: ~

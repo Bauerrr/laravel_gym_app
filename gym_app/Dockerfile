@@ -21,9 +21,19 @@ ENTRYPOINT ["docker/entrypoint.sh"]
 FROM node:21-alpine as node
 
 WORKDIR /var/www
-COPY . .
+COPY ./gym_app_angular ./gym_app_angular
+WORKDIR /var/www/gym_app_angular
 
+RUN rm -rf node_modules
+RUN rm -f package-lock.json
+
+RUN npm install -g @angular/cli
 RUN npm install
 
-VOLUME /var/www/node_modules
+#ENV PORT=3000
+CMD ["npm", "install"]
+CMD ["ng", "serve", "--host", "0.0.0.0", "--port", "3000"]
+
+
+
 
